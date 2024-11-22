@@ -1,0 +1,294 @@
+<html><head><base href="<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Responsables</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            align-self: start;
+        }
+
+        .input-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .date-inputs {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.5s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 15px;
+        }
+
+        .day-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .day-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2196F3;
+        }
+
+        .responsible {
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .responsible-list {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .responsible-list h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        #responsiblesList div {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .balance-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .balance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .balance-item:last-child {
+            border-bottom: none;
+        }
+
+        .balance-name {
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .balance-count {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="input-section">
+                <div class="input-group">
+                    <input type="text" id="responsibleInput" placeholder="Nombre del responsable">
+                </div>
+                <button onclick="addResponsible()">Agregar Responsable</button>
+            </div>
+            
+            <div class="responsible-list">
+                <h3>Responsables Registrados:</h3>
+                <div id="responsiblesList"></div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="date-inputs">
+                    <input type="date" id="startDate" placeholder="Fecha inicial">
+                    <input type="date" id="endDate" placeholder="Fecha final">
+                </div>
+                <button onclick="generateCalendar()">Generar Calendario</button>
+            </div>
+            <div id="calendar" class="calendar"></div>
+            <div id="balance" class="balance-section">
+                <h3>Balance de Asignaciones</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let responsibles = [];
+        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+        function addResponsible() {
+            const input = document.getElementById('responsibleInput');
+            const name = input.value.trim();
+            
+            if (name && !responsibles.includes(name)) {
+                responsibles.push(name);
+                input.value = '';
+                updateResponsiblesList();
+            } else if (responsibles.includes(name)) {
+                alert('Este responsable ya está en la lista');
+            }
+        }
+
+        function updateResponsiblesList() {
+            const list = document.getElementById('responsiblesList');
+            list.innerHTML = responsibles.map(name => `<div>${name}</div>`).join('');
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function generateCalendar() {
+            if (responsibles.length === 0) {
+                alert('Agregue al menos un responsable');
+                return;
+            }
+
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
+
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                alert('Por favor seleccione fechas válidas');
+                return;
+            }
+
+            if (endDate < startDate) {
+                alert('La fecha final debe ser posterior a la fecha inicial');
+                return;
+            }
+
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            
+            let currentDate = new Date(startDate);
+            const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+            let allAssignments = [];
+            const blocksNeeded = Math.ceil(totalDays / responsibles.length);
+            
+            for (let i = 0; i < blocksNeeded; i++) {
+                const shuffledBlock = shuffleArray(responsibles);
+                allAssignments = [...allAssignments, ...shuffledBlock];
+            }
+
+            allAssignments = allAssignments.slice(0, totalDays);
+
+            // Generar el calendario
+            for (let i = 0; i < totalDays; i++) {
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                
+                const date = new Date(currentDate);
+                const responsible = allAssignments[i];
+                
+                dayCard.innerHTML = `
+                    <div class="day-header">${days[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}</div>
+                    <div class="responsible">${responsible}</div>
+                `;
+                
+                calendar.appendChild(dayCard);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // Generar el balance
+            const balance = {};
+            responsibles.forEach(responsible => balance[responsible] = 0);
+            
+            allAssignments.forEach(responsible => {
+                balance[responsible]++;
+            });
+
+            const balanceSection = document.getElementById('balance');
+            balanceSection.innerHTML = '<h3>Balance de Asignaciones</h3>';
+            
+            Object.entries(balance).forEach(([name, count]) => {
+                const balanceItem = document.createElement('div');
+                balanceItem.className = 'balance-item';
+                balanceItem.innerHTML = `
+                    <span class="balance-name">${name}</span>
+                    <span class="balance-count">${count} días asignados</span>
+                `;
+                balanceSection.appendChild(balanceItem);
+            });
+        }
+
+        document.getElementById('responsibleInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addResponsible();
+            }
+        });
+
+        const today = new Date();
+        document.getElementById('startDate').valueAsDate = today;
+        const defaultEndDate = new Date();
+        defaultEndDate.setDate(today.getDate() + 29);
+        document.getElementById('endDate').valueAsDate = defaultEndDate;
+    </script>
+</body>
+</html>
